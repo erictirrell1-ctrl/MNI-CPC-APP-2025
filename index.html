@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MNI to CPC Calculator by Eric Tirrell</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111827">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js'));
+    }
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .value-box { border: 2px solid #111827; border-radius: 0.75rem; background: #F9FAFB; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .value-box input { background: transparent; font-weight: 600; font-size: 1rem; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+  <div class="max-w-5xl mx-auto p-6">
+    <header class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold">MNI to CPC Calculator</h1>
+        <p class="text-sm text-gray-600">Created by Eric Tirrell — stepwise guide with fixed target values and live calculations.</p>
+      </div>
+      <div class="text-xs">
+        <span class="px-2 py-1 rounded bg-gray-200">Web Version</span>
+        <span id="jsStatus" class="ml-2 px-2 py-1 rounded bg-red-200 text-red-800">JS not loaded</span>
+      </div>
+    </header>
+
+    <section class="bg-white rounded-2xl shadow p-5 mb-6">
+      <h2 class="text-xl font-semibold mb-4">Target Site</h2>
+      <div class="flex flex-wrap items-center gap-3 mb-3">
+        <div class="inline-flex rounded-xl overflow-hidden border">
+          <button id="btnAnx" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200">Anxiosomatic</button>
+          <button id="btnDys" class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200">Dysphoric</button>
+        </div>
+        <div class="text-xs text-gray-600">or</div>
+        <div>
+          <select id="target" class="rounded-lg border-gray-300 text-sm">
+            <option value="ANXIOSOMATIC" selected>ANXIOSOMATIC</option>
+            <option value="DYSPHORIC">DYSPHORIC</option>
+          </select>
+        </div>
+      </div>
+      <p class="text-sm text-gray-700 mb-4" id="loadedMsg">Loaded ANXIOSOMATIC: MNI 0, 48, 46 | PnZ 0.284 | PAL 0.496</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="value-box p-3">
+          <label class="block text-xs text-gray-600 mb-1">Target (MNI) — fixed</label>
+          <input id="mni" value="0, 48, 46" class="w-full rounded-md" readonly>
+        </div>
+        <div class="value-box p-3">
+          <label class="block text-xs text-gray-600 mb-1">PnZ — fixed</label>
+          <input id="pnz" value="0.284" class="w-full rounded-md" readonly>
+        </div>
+        <div class="value-box p-3">
+          <label class="block text-xs text-gray-600 mb-1">PAL — fixed</label>
+          <input id="pal" value="0.496" class="w-full rounded-md" readonly>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow p-5 mb-6">
+      <h2 class="text-xl font-semibold mb-2">Identify Vertex</h2>
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="value-box p-3">
+            <label class="block text-xs text-gray-600 mb-1">Step 1 — Measure Left Pre-auricular (LPA) → Right Pre-auricular (RPA) (cm)</label>
+            <input id="lpaRpaStraight" class="w-full rounded-md" placeholder="enter value in cm">
+          </div>
+          <div class="value-box p-3">
+            <label class="block text-xs text-gray-600 mb-1">Step 2 — Measure Nasion (Nz) → Inion (Iz) (cm)</label>
+            <input id="nzIz" class="w-full rounded-md" placeholder="enter value in cm">
+          </div>
+        </div>
+        <div class="text-sm text-gray-700 bg-gray-50 border rounded-xl p-3">
+          Mark the spot where these two arcs intersect — this is your <strong>vertex (Cz)</strong>.
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow p-5 mb-6">
+      <h2 class="text-xl font-semibold mb-2">Measure for Target (Steps 3–5)</h2>
+      <div class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+          <div class="md:col-span-2">
+            <p class="text-sm"><strong>Step 3 —</strong> Starting at the nasion, measure and mark <em>“s”</em> along the midsagittal line <span class="text-gray-500">(auto-calculated)</span>.</p>
+          </div>
+          <div class="value-box p-3">
+            <label class="block text-xs text-gray-600 mb-1">s (cm)</label>
+            <input id="smallS" class="w-full rounded-md" readonly>
+            <p class="text-xs text-gray-500 mt-1" id="smallSCalc">s = Nz–Iz × PnZ</p>
+          </div>
+        </div>
+        <div>
+          <p class="text-sm mb-2"><strong>Step 4 —</strong> Measure from LEFT pre-auricular through <em>s</em> to RIGHT pre-auricular. Record value here.</p>
+          <div class="value-box p-3 max-w-md">
+            <label class="block text-xs text-gray-600 mb-1">Active Curve (cm)</label>
+            <input id="curveThroughS" class="w-full rounded-md" placeholder="enter value in cm">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+          <div class="md:col-span-2">
+            <p class="text-sm"><strong>Step 5 —</strong> Measure and mark distance <em>“S”</em> along the curve from the LEFT pre-auricular to the coil location <span class="text-gray-500">(auto-calculated)</span>. <span class="text-gray-600 block mt-1 text-xs">This is your target spot.</span></p>
+          </div>
+          <div class="value-box p-3">
+            <label class="block text-xs text-gray-600 mb-1">S from LEFT (cm)</label>
+            <input id="bigS" class="w-full rounded-md" readonly>
+            <p class="text-xs text-gray-500 mt-1" id="bigSCalc">S = Active curve × PAL</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+<script>
+(function(){
+  const FIXED={ANXIOSOMATIC:{MNI:"0, 48, 46",PnZ:0.284,PAL:0.496},DYSPHORIC:{MNI:"-32, 44, 34",PnZ:0.277,PAL:0.37}};
+  const E=id=>document.getElementById(id);
+  const els={btnAnx:E('btnAnx'),btnDys:E('btnDys'),target:E('target'),mni:E('mni'),pnz:E('pnz'),pal:E('pal'),nzIz:E('nzIz'),curveThroughS:E('curveThroughS'),smallS:E('smallS'),smallSCalc:E('smallSCalc'),bigS:E('bigS'),bigSCalc:E('bigSCalc'),loadedMsg:E('loadedMsg')};
+  function num(v){const n=parseFloat(String(v).replace(/,/g,''));return isFinite(n)?n:NaN;}
+  function fmt(n,d=2){return isFinite(n)?Number(n).toFixed(d):"";}
+  function setTarget(t){const f=FIXED[t];if(!f)return;els.target.value=t;els.mni.value=f.MNI;els.pnz.value=f.PnZ;els.pal.value=f.PAL;els.loadedMsg.textContent=`Loaded ${t}: MNI ${f.MNI} | PnZ ${f.PnZ} | PAL ${f.PAL}`;recalc();}
+  function recalc(){const pnz=num(els.pnz.value),pal=num(els.pal.value),nziz=num(els.nzIz.value),curve=num(els.curveThroughS.value);const s=isFinite(nziz)&&isFinite(pnz)?nziz*pnz:NaN;els.smallS.value=fmt(s,2);els.smallSCalc.textContent=isFinite(nziz)&&isFinite(pnz)?`s = Nz–Iz × PnZ = ${fmt(nziz,2)} × ${fmt(pnz,3)} = ${fmt(s,2)} cm`:'s = Nz–Iz × PnZ';const Sbig=isFinite(curve)&&isFinite(pal)?curve*pal:NaN;els.bigS.value=fmt(Sbig,2);els.bigSCalc.textContent=isFinite(curve)&&isFinite(pal)?`S = Active curve × PAL = ${fmt(curve,2)} × ${fmt(pal,3)} = ${fmt(Sbig,2)} cm`:'S = Active curve × PAL';}
+  ['input','change'].forEach(evt=>{els.nzIz.addEventListener(evt,recalc);els.curveThroughS.addEventListener(evt,recalc);});
+  els.btnAnx.addEventListener('click',()=>setTarget('ANXIOSOMATIC'));
+  els.btnDys.addEventListener('click',()=>setTarget('DYSPHORIC'));
+  els.target.addEventListener('change',e=>setTarget(e.target.value));
+  setTarget('ANXIOSOMATIC');
+})();
+</script>
+</body>
+</html>
